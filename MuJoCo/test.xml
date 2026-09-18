@@ -1,0 +1,241 @@
+<mujoco model="hexapod_urdf">
+  <!-- 临时开启惯性自动计算：�?geom/mesh 自动推断 -->
+  <compiler angle="degree" inertiafromgeom="true" autolimits="true"/>
+  <option timestep="0.01" gravity="0 0 -9.81" integrator="Euler"/>
+
+  <visual>
+    <global realtime="1" />
+    <quality shadowsize="16384" numslices="28" offsamples="4" />
+    <headlight diffuse="1 1 1" specular="0.5 0.5 0.5" active="1" />
+    <rgba fog="0 0 0 1" haze="0 1 0 1" />
+  </visual>
+
+  <asset>
+    <texture name="plane" type="2d" builtin="checker" rgb1=".1 .1 .1" rgb2=".9 .9 .9"
+      width="512" height="512" mark="cross" markrgb=".8 .8 .8" />
+    <material name="plane" reflectance="0.3" texture="plane" texrepeat="1 1" texuniform="true"/>
+    <mesh name="base_link_mesh" file="meshes/base_link.obj"/>
+    <mesh name="Link_11_mesh" file="meshes/Link_11.obj"/>
+    <mesh name="Link_12_mesh" file="meshes/Link_12.obj"/>
+    <mesh name="Link_13_mesh" file="meshes/Link_13.obj"/>
+    <mesh name="Link_21_mesh" file="meshes/Link_21.obj"/>
+    <mesh name="Link_22_mesh" file="meshes/Link_22.obj"/>
+    <mesh name="Link_23_mesh" file="meshes/Link_23.obj"/>
+    <mesh name="Link_31_mesh" file="meshes/Link_31.obj"/>
+    <mesh name="Link_32_mesh" file="meshes/Link_32.obj"/>
+    <mesh name="Link_33_mesh" file="meshes/Link_33.obj"/>
+    <mesh name="Link_41_mesh" file="meshes/Link_41.obj"/>
+    <mesh name="Link_42_mesh" file="meshes/Link_42.obj"/>
+    <mesh name="Link_43_mesh" file="meshes/Link_43.obj"/>
+    <mesh name="Link_51_mesh" file="meshes/Link_51.obj"/>
+    <mesh name="Link_52_mesh" file="meshes/Link_52.obj"/>
+    <mesh name="Link_53_mesh" file="meshes/Link_53.obj"/>
+    <mesh name="Link_61_mesh" file="meshes/Link_61.obj"/>
+    <mesh name="Link_62_mesh" file="meshes/Link_62.obj"/>
+    <mesh name="Link_63_mesh" file="meshes/Link_63.obj"/>
+  </asset>
+
+  <default>
+    <!-- Enhanced friction for stair climbing: prevent slipping on stairs -->
+    <geom friction="3.0 0.1 0.001" rgba="0.8 0.6 0.4 1" contype="1" conaffinity="1"/>
+    <joint armature="0.01" damping="0.3" frictionloss="0"/>
+    <motor ctrllimited="true" ctrlrange="-3 3"/>
+  </default>
+
+  <worldbody>
+    <geom name="ground" type="plane" pos="0 0 0" size="10 10 0.1" rgba="0.5 0.5 0.5 0.5" material="plane"/>
+    <light directional="true" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" pos="0 0 5"/>
+
+    <!-- Ramp: slope angle 15deg, length 3.0m, starts at X=0.5m -->
+    <!-- Z ranges from 0 to 3.0 * tan(15deg) = 0.804m -->
+    <body name="slope" pos="2.0 0 0.37">
+      <geom type="box" size="1.5 0.5 0.02" pos="0 0 0" euler="0 -15 0" rgba="0.6 0.5 0.4 1" friction="3.0 0.1 0.001" contype="1" conaffinity="1"/>
+    </body>
+    
+    <!-- Top platform: flat area at height 0.804m after slope -->
+    <body name="platform" pos="3.5 0 0.804">
+      <geom type="box" size="2.0 0.5 0.02" pos="2.0 0 0" rgba="0.6 0.5 0.4 1" friction="3.0 0.1 0.001" contype="1" conaffinity="1"/>
+    </body>
+
+    <!-- Robot root node: moved slightly away from stair start with appropriate height -->
+    <!-- pos="0.1 0 0.08": x=0.1 gives more space, z=0.08 provides proper standing height -->
+    <body name="robot_root" pos="0.1 0 0.08">
+      <joint name="base_freejoint" type="free"/>
+
+      <!-- Torso (base_link) -->
+      <body name="torso" pos="0 0 0">
+        <!-- Mass 124g, inertia estimated based on 0.25x0.2x0.05m box -->
+        <!-- <inertial mass="0.124" pos="0 0 0" diaginertia="0.00044 0.00067 0.00106"/> -->
+        <geom type="mesh" mesh="base_link_mesh" rgba="0.2 0.5 0.8 1"/>
+        <!-- IMU mounting point -->
+        <site name="imu_site" type="box" size="0.01 0.01 0.01" pos="0 0 0.01" rgba="0 1 0 0.5"/>
+
+        <!-- ========== Leg 1 (Right Front) ========== -->
+        <body name="leg1_link1" pos="-0.06194699 -0.09917894 -0.00419996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_11_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_11" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg1_link2" pos="-0.00839013 0.05139288 0.02635" euler="0 0 -23.06">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_12_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_12" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg1_link3" pos="-0.00080176 0.06294203 0.01826994" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_13_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_13" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg1_foot" pos="0.0328 0.0452 -0.0985">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot1_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Leg 2 (Right Middle) ========== -->
+        <body name="leg2_link1" pos="-0.1050637 -0.00172385 -0.00419996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_21_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_21" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg2_link2" pos="0.03040753 0.04227297 0.02635" euler="0 0 -68.07">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_22_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_22" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg2_link3" pos="-0.0008018 0.06031259 0.02564918" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_23_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_23" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg2_foot" pos="0.0328 0.0401 -0.1007">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot2_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Leg 3 (Right Rear) ========== -->
+        <body name="leg3_link1" pos="-0.06527939 0.09703534 -0.00419996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_31_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_31" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg3_link2" pos="0.05139288 0.00839013 0.02635" euler="0 0 -113.0">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_32_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_32" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg3_link3" pos="-0.00080098 0.05798786 0.03054341" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_33_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_33" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg3_foot" pos="0.0328 0.0215 -0.1062">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot3_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Leg 4 (Left Front) ========== -->
+        <body name="leg4_link1" pos="0.06194483 0.09919603 -0.00419996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_41_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_41" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg4_link2" pos="-0.0428592 -0.02957553 0.02635" euler="0 0 -23.06">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_42_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_42" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg4_link3" pos="0.00110166 -0.0596456 0.02716413" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_43_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_43" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg4_foot" pos="0.0312 -0.0495 -0.0964">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot4_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Leg 5 (Left Middle) ========== -->
+        <body name="leg5_link1" pos="0.1050421 0.00174096 -0.00109996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_51_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_51" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg5_link2" pos="-0.05121925 0.00939304 0.0232496" euler="0 0 -68.07">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_52_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_52" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg5_link3" pos="-0.00049955 -0.03535101 0.05518876" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_53_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_53" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg5_foot" pos="0.0328 -0.0592 -0.0908">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot5_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Leg 6 (Left Rear) ========== -->
+        <body name="leg6_link1" pos="0.06527723 -0.09701822 -0.00419996" euler="0 0 180">
+          <!-- <inertial mass="0.017" pos="0 0 0.079" diaginertia="3.5e-5 3.5e-5 4e-7"/> -->
+          <geom type="mesh" mesh="Link_61_mesh" rgba="0.6 0.4 0.2 1"/>
+          <joint name="Joint_61" type="hinge" axis="0 0 1" range="-180 180"/>
+          <body name="leg6_link2" pos="-0.00986268 0.05113081 0.02634979" euler="0 0 -136.8">
+            <!-- <inertial mass="0.135" pos="0 0.089 0" diaginertia="3.5e-4 3.3e-6 3.5e-4"/> -->
+            <geom type="mesh" mesh="Link_62_mesh" rgba="0.6 0.4 0.2 1"/>
+            <joint name="Joint_62" type="hinge" axis="1 0 0" range="-180 180"/>
+            <body name="leg6_link3" pos="-0.00049875 -0.03652645 0.05441795" euler="0 0 0">
+              <!-- <inertial mass="0.037" pos="0 0 0.061" diaginertia="4.6e-5 4.6e-5 9e-7"/> -->
+              <geom type="mesh" mesh="Link_63_mesh" rgba="0.6 0.4 0.2 1"/>
+              <joint name="Joint_63" type="hinge" axis="1 0 0" range="-180 180"/>
+              <!-- Foot tip body at the end of tibia link -->
+              <body name="leg6_foot" pos="0.0328 -0.0875 -0.0640">
+                <!-- <inertial mass="0.001" pos="0 0 0" diaginertia="1e-7 1e-7 1e-7"/> -->
+                <geom name="foot6_geom" type="sphere" size="0.005" rgba="0.3 0.3 0.3 1" friction="2.0 0.1 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Enhanced KP values: from 50 to 100 for more precise joint position control -->
+    <!-- Leg 1 -->
+    <position joint="Joint_11" name="Joint_11_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_12" name="Joint_12_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_13" name="Joint_13_servo" kp="100" ctrlrange="-3 2"/>
+    <!-- Leg 2 -->
+    <position joint="Joint_21" name="Joint_21_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_22" name="Joint_22_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_23" name="Joint_23_servo" kp="100" ctrlrange="-3 2"/>
+    <!-- Leg 3 -->
+    <position joint="Joint_31" name="Joint_31_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_32" name="Joint_32_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_33" name="Joint_33_servo" kp="100" ctrlrange="-3 2"/>
+    <!-- Leg 4 -->
+    <position joint="Joint_41" name="Joint_41_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_42" name="Joint_42_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_43" name="Joint_43_servo" kp="100" ctrlrange="-3 2"/>
+    <!-- Leg 5 -->
+    <position joint="Joint_51" name="Joint_51_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_52" name="Joint_52_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_53" name="Joint_53_servo" kp="100" ctrlrange="-3 2"/>
+    <!-- Leg 6 -->
+    <position joint="Joint_61" name="Joint_61_servo" kp="100" ctrlrange="-2.5 2.5"/>
+    <position joint="Joint_62" name="Joint_62_servo" kp="100" ctrlrange="-3 3"/>
+    <position joint="Joint_63" name="Joint_63_servo" kp="100" ctrlrange="-3 2"/>
+  </actuator>
+
+  <sensor>
+    <framequat name="imu_orientation" objtype="site" objname="imu_site"/>
+    <accelerometer name="imu_accelerometer" site="imu_site"/>
+    <gyro name="imu_gyro" site="imu_site"/>
+  </sensor>
+</mujoco>

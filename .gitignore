@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# MuJoCo 仿真运行产物
+MuJoCo/data/*
+!MuJoCo/data/.gitkeep
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 未纳入版本控制的大文件与二进制材料（如需上传请改用 Git LFS）
+胡增凡-毕业设计材料.zip
+论文说明书.pdf
+Ansys/
+Model/
+答辩PPT与指导记录/
+
+# 论文与学术材料：含查重报告等敏感内容，不公开
+论文/
+Paper/
